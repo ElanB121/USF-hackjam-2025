@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="flagContainer"></div>
     <div id="timer" class="timer">30</div>
     <div class="login-container">
         <img src="sign.webp" alt="Sign" id="signImage" class="sign-image">
@@ -55,6 +56,23 @@
                 <button type="submit" class="login-btn">Verify</button>
             </form>
             <div id="robotMessage" class="message"></div>
+        </div>
+    </div>
+
+    <!-- Secondary Verification Modal -->
+    <div id="secondaryModal" class="modal">
+        <div class="modal-content">
+            <h2>📋 Additional Verification Required</h2>
+            <p id="scenarioText" class="scenario-text"></p>
+            <p id="actionText" class="action-text"></p>
+            <form id="secondaryForm">
+                <div class="input-group">
+                    <label for="secondaryAnswer">Enter your number:</label>
+                    <input type="number" id="secondaryAnswer" name="secondaryAnswer" placeholder="Enter a number" required>
+                </div>
+                <button type="submit" class="login-btn">Submit</button>
+            </form>
+            <div id="secondaryMessage" class="message"></div>
         </div>
     </div>
 

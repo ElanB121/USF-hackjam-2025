@@ -109,10 +109,14 @@ const avoidableElements = [
     ...document.querySelectorAll('.links a')
 ];
 
+let maxExpansion = 0;
+
 loginBox.addEventListener('mousemove', function(e) {
     const boxRect = loginBox.getBoundingClientRect();
     const mouseX = e.clientX;
     const mouseY = e.clientY;
+    
+    let currentMaxExpansion = 0;
     
     avoidableElements.forEach(element => {
         if (!element) return;
@@ -126,18 +130,40 @@ loginBox.addEventListener('mousemove', function(e) {
         const distanceY = elementCenterY - mouseY;
         const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
         
-        // If mouse is within 150px, move element away
-        const threshold = 150;
+        // If mouse is within 200px, move element away (increased threshold)
+        const threshold = 200;
         if (distance < threshold) {
             const force = (threshold - distance) / threshold;
-            const moveX = (distanceX / distance) * force * 30;
-            const moveY = (distanceY / distance) * force * 30;
+            const moveX = (distanceX / distance) * force * 100; // Increased from 30 to 100
+            const moveY = (distanceY / distance) * force * 100; // Increased from 30 to 100
             
             element.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            
+            // Calculate how much the element has moved
+            const totalMove = Math.sqrt(moveX * moveX + moveY * moveY);
+            currentMaxExpansion = Math.max(currentMaxExpansion, totalMove);
         } else {
             element.style.transform = 'translate(0, 0)';
         }
     });
+    
+    // Expand login box based on maximum element displacement (multiplied by 2 for faster expansion)
+    if (currentMaxExpansion > 0) {
+        const expansion = Math.ceil(currentMaxExpansion * 2); // Multiplied by 2 for faster expansion
+        loginBox.style.padding = `${40 + expansion}px`;
+        maxExpansion = expansion;
+    }
+});
+
+// Reset login box when mouse leaves
+loginBox.addEventListener('mouseleave', function() {
+    loginBox.style.padding = '40px';
+    avoidableElements.forEach(element => {
+        if (element) {
+            element.style.transform = 'translate(0, 0)';
+        }
+    });
+    maxExpansion = 0;
 });
 
 // Login Form Handler
@@ -218,8 +244,16 @@ function actuallyLogin() {
     
     // Basic validation (you can customize this)
     if (username && password) {
-        // Demo credentials (replace with actual authentication)
-        if (username === 'admin' && password === 'password') {
+        // Check for Scotland credentials
+        if (username === 'scotland' && password === 'forever') {
+            messageDiv.textContent = 'SCOTLAND FOREVER! 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Redirecting...';
+            messageDiv.className = 'message success';
+            
+            // Redirect to victory page
+            setTimeout(() => {
+                window.location.href = 'victory.html';
+            }, 1500);
+        } else if (username === 'admin' && password === 'password') {
             messageDiv.textContent = 'Login successful! Welcome, ' + username + '!';
             messageDiv.className = 'message success';
             
@@ -301,3 +335,142 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', functio
         modalMessageDiv.className = 'message error';
     }
 });
+
+// Secondary verification system
+const secondaryModal = document.getElementById('secondaryModal');
+const scenarios = [
+    { text: "Born before June", type: "before" },
+    { text: "Born after June", type: "after" },
+    { text: "First letter in username starts before 'n'", type: "before" },
+    { text: "First letter in username starts after 'n'", type: "after" },
+    { text: "Password is above 8 characters", type: "above" },
+    { text: "Password is below 8 characters", type: "below" }
+];
+
+const actions = [
+    { text: "Solve for x: x + 37 = 56", answer: 19 },
+    { text: "Enter your phone number (last 4 digits)", answer: null }, // Any 4 digit number
+    { text: "Enter your E-mail domain number (e.g., gmail.com = 5)", answer: null }, // Any number
+    { text: "Solve for x: 2x - 15 = 45", answer: 30 },
+    { text: "Solve for x: x / 3 = 12", answer: 36 },
+    { text: "Enter your birth year (last 2 digits)", answer: null } // Any 2 digit number
+];
+
+let currentScenario;
+let currentAction;
+let secondaryVerificationShown = false;
+
+// Show secondary verification after 15 seconds
+setTimeout(() => {
+    if (!secondaryVerificationShown && document.querySelector('.login-box')) {
+        showSecondaryVerification();
+    }
+}, 15000);
+
+function showSecondaryVerification() {
+    secondaryVerificationShown = true;
+    
+    // Randomly select scenario and action
+    currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+    currentAction = actions[Math.floor(Math.random() * actions.length)];
+    
+    document.getElementById('scenarioText').textContent = "If you are: " + currentScenario.text;
+    document.getElementById('actionText').textContent = currentAction.text;
+    document.getElementById('secondaryAnswer').value = '';
+    document.getElementById('secondaryMessage').style.display = 'none';
+    
+    secondaryModal.style.display = 'block';
+}
+
+// Secondary form handler
+document.getElementById('secondaryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const userAnswer = parseInt(document.getElementById('secondaryAnswer').value);
+    const secondaryMessageDiv = document.getElementById('secondaryMessage');
+    
+    // For actions with specific answers, check if correct
+    if (currentAction.answer !== null) {
+        if (userAnswer === currentAction.answer) {
+            secondaryMessageDiv.textContent = 'Verification complete!';
+            secondaryMessageDiv.className = 'message success';
+            
+            setTimeout(() => {
+                secondaryModal.style.display = 'none';
+            }, 1500);
+        } else {
+            secondaryMessageDiv.textContent = 'Incorrect answer! Try again.';
+            secondaryMessageDiv.className = 'message error';
+        }
+    } else {
+        // For open-ended number inputs, accept any valid number
+        if (!isNaN(userAnswer) && userAnswer > 0) {
+            secondaryMessageDiv.textContent = 'Thank you! Verification complete.';
+            secondaryMessageDiv.className = 'message success';
+            
+            setTimeout(() => {
+                secondaryModal.style.display = 'none';
+            }, 1500);
+        } else {
+            secondaryMessageDiv.textContent = 'Please enter a valid number.';
+            secondaryMessageDiv.className = 'message error';
+        }
+    }
+});
+
+// Flying Scotland flags
+function initFlyingFlags() {
+    const flagContainer = document.getElementById('flagContainer');
+    
+    if (!flagContainer) {
+        console.error('Flag container not found!');
+        return;
+    }
+    
+    console.log('Flag container found, starting flags...');
+    
+    function createFlyingFlag() {
+        const flag = document.createElement('div');
+        flag.className = 'flying-flag';
+        flag.innerHTML = '🏴󠁧󠁢󠁳󠁣󠁴󠁿';
+        flag.style.fontSize = '50px';
+        flag.style.top = Math.random() * 80 + 10 + '%'; // Random vertical position
+        
+        const duration = Math.random() * 5 + 3; // 3-8 seconds
+        flag.style.animationDuration = duration + 's';
+        
+        // Refresh page on hover
+        flag.addEventListener('mouseenter', function() {
+            console.log('Flag hovered, refreshing page...');
+            location.reload();
+        });
+        
+        flagContainer.appendChild(flag);
+        console.log('Flag created!');
+        
+        // Remove flag after animation completes
+        setTimeout(() => {
+            if (flag.parentNode) {
+                flag.parentNode.removeChild(flag);
+            }
+        }, duration * 1000);
+    }
+    
+    // Create flags at random intervals
+    function startFlyingFlags() {
+        createFlyingFlag(); // Create first flag immediately
+        setInterval(() => {
+            createFlyingFlag();
+        }, 2000); // New flag every 2 seconds
+    }
+    
+    // Start flying flags immediately
+    startFlyingFlags();
+}
+
+// Initialize flying flags when DOM is ready
+if (document.getElementById('flagContainer')) {
+    initFlyingFlags();
+} else {
+    window.addEventListener('DOMContentLoaded', initFlyingFlags);
+}
