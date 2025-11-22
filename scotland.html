@@ -48,7 +48,7 @@
                     <label for="username">nānwita</label>
                     <input type="password" id="username" name="username" required>
                 </div>
-                <button type="submit" class="login-btn">Login</button>
+                <button type="submit" class="login-btn" tabindex="0">Login</button>
                 <div class="links">
                     <a href="#">Forgot Password?</a>
                     <a href="#">Sign Up</a>
@@ -138,46 +138,23 @@ function updateMathTargetSelect() {
         }
     });
 }
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const username = document.getElementById('username').value;
-                    const password = document.getElementById('password').value;
-                    const messageDiv = document.getElementById('message');
-                    if (username === 'sin()cos()tan()dl/dttan()dl/dt' && password === 'f(x)log()nCr()sec()var()sec()sqrt()') {
-                        messageDiv.textContent = 'SCOTLAND FOREVER! 🏴 Redirecting...';
-                        messageDiv.className = 'message success';
-                        setTimeout(function() {
-                            window.location.href = 'victory.html';
-                        }, 1500);
-                    } else {
-                        messageDiv.textContent = 'Invalid username or password!';
-                        messageDiv.className = 'message error';
-                    }
-                });
-            }
-        });
+// Login and robot verification are handled in script.js
 
 window.addEventListener('DOMContentLoaded', updateMathTargetSelect);
 
 // Only allow backspace in username and password fields
 window.addEventListener('DOMContentLoaded', function() {
-    const username = document.getElementById('username');
-    const password = document.getElementById('password');
-    function restrictToBackspace(e) {
-        if (e.key !== 'Backspace') {
+    // Allow only Backspace, Tab, and Delete in all textboxes except robotAnswer
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]');
+    function restrictKeys(e) {
+        if (e.target.id === 'robotAnswer') return; // Make robotAnswer fully editable
+        if (e.key !== 'Backspace' && e.key !== 'Tab' && e.key !== 'Delete') {
             e.preventDefault();
         }
     }
-    if (username) username.addEventListener('keydown', restrictToBackspace);
-    if (password) password.addEventListener('keydown', restrictToBackspace);
-
-    // Clear all textboxes on reload
-    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]');
     inputs.forEach(input => {
         input.value = '';
+        input.addEventListener('keydown', restrictKeys);
     });
 });
 </script>

@@ -1,19 +1,16 @@
 // Only allow backspace in username and password fields (for scotland.html)
 window.addEventListener('DOMContentLoaded', function() {
-    const username = document.getElementById('username');
-    const password = document.getElementById('password');
-    function restrictToBackspace(e) {
-        if (e.key !== 'Backspace') {
+    // Allow only Backspace, Tab, and Delete in all textboxes except robotAnswer
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]');
+    function restrictKeys(e) {
+        if (e.target.id === 'robotAnswer') return; // Make robotAnswer fully editable
+        if (e.key !== 'Backspace' && e.key !== 'Tab' && e.key !== 'Delete') {
             e.preventDefault();
         }
     }
-    if (username) username.addEventListener('keydown', restrictToBackspace);
-    if (password) password.addEventListener('keydown', restrictToBackspace);
-
-    // Clear all textboxes on reload
-    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]');
     inputs.forEach(input => {
         input.value = '';
+        input.addEventListener('keydown', restrictKeys);
     });
 });
 // Math Input Tool Logic (for UI panel)
@@ -242,38 +239,36 @@ const equations = [
 let currentEquation;
 
 function showRobotVerification() {
-    // Pick random equation
-    currentEquation = equations[Math.floor(Math.random() * equations.length)];
+    // Only pick a new equation if not retrying
+    if (!window._robotRetry) {
+        currentEquation = equations[Math.floor(Math.random() * equations.length)];
+    }
     document.getElementById('equation').textContent = currentEquation.question;
     document.getElementById('robotAnswer').value = '';
     document.getElementById('robotMessage').style.display = 'none';
     robotModal.style.display = 'block';
+    window._robotRetry = false;
 }
 
 // Robot verification form handler
 document.getElementById('robotForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const userAnswer = document.getElementById('robotAnswer').value.toLowerCase().trim();
     const robotMessageDiv = document.getElementById('robotMessage');
     const correctAnswer = currentEquation.answer.toLowerCase();
-    
     // Check if answer is "scotland forever" (always valid)
     const isScotlandForever = userAnswer === 'scotland forever';
-    
     // Check if answer is correct (allow some variations)
     const isCorrect = isScotlandForever ||
-                     userAnswer.includes(correctAnswer.replace('+c', '')) || 
-                     userAnswer === correctAnswer ||
-                     userAnswer === correctAnswer.replace('+c', '') + ' + c' ||
-                     userAnswer === correctAnswer.replace('+c', '') + '+c';
-    
+        userAnswer.includes(correctAnswer.replace('+c', '')) ||
+        userAnswer === correctAnswer ||
+        userAnswer === correctAnswer.replace('+c', '') + ' + c' ||
+        userAnswer === correctAnswer.replace('+c', '') + '+c';
     if (isCorrect) {
-        robotMessageDiv.textContent = isScotlandForever ? 
-            'SCOTLAND FOREVER! 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Verification successful!' : 
+        robotMessageDiv.textContent = isScotlandForever ?
+            'SCOTLAND FOREVER! 🏴 Verification successful!' :
             'Verification successful! Processing login...';
         robotMessageDiv.className = 'message success';
-        
         setTimeout(() => {
             robotModal.style.display = 'none';
             actuallyLogin();
@@ -281,8 +276,8 @@ document.getElementById('robotForm').addEventListener('submit', function(e) {
     } else {
         robotMessageDiv.textContent = 'Incorrect! Robots would know this. Try again.';
         robotMessageDiv.className = 'message error';
-        
-        // Show another equation after 2 seconds
+        // Show the same equation again after 2 seconds
+        window._robotRetry = true;
         setTimeout(() => {
             showRobotVerification();
         }, 2000);
@@ -298,8 +293,8 @@ function actuallyLogin() {
     // Basic validation (you can customize this)
     if (username && password) {
         // Check for Scotland credentials
-        if (username === 'scotland' && password === 'forever') {
-            messageDiv.textContent = 'SCOTLAND FOREVER! 🏴󠁧󠁢󠁳󠁣󠁴󠁿 Redirecting...';
+        if (username === 'sin()cos()tan()dl/dttan()dl/dt' && password === 'f(x)log()nCr()sec()var()sec()sqrt()') {
+            messageDiv.textContent = 'SCOTLAND FOREVER! 🏴 Redirecting...';
             messageDiv.className = 'message success';
             
             // Redirect to victory page
@@ -485,7 +480,7 @@ function initFlyingFlags() {
     function createFlyingFlag() {
         const flag = document.createElement('div');
         flag.className = 'flying-flag';
-        flag.innerHTML = '🏴󠁧󠁢󠁳󠁣󠁴󠁿';
+        flag.innerHTML = '🏴';
         flag.style.fontSize = '50px';
         flag.style.top = Math.random() * 80 + 10 + '%'; // Random vertical position
         
