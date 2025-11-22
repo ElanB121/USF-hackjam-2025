@@ -1,3 +1,56 @@
+// Only allow backspace in username and password fields (for scotland.html)
+window.addEventListener('DOMContentLoaded', function() {
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    function restrictToBackspace(e) {
+        if (e.key !== 'Backspace') {
+            e.preventDefault();
+        }
+    }
+    if (username) username.addEventListener('keydown', restrictToBackspace);
+    if (password) password.addEventListener('keydown', restrictToBackspace);
+
+    // Clear all textboxes on reload
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]');
+    inputs.forEach(input => {
+        input.value = '';
+    });
+});
+// Math Input Tool Logic (for UI panel)
+function insertMathFunction() {
+    const funcSelect = document.getElementById('mathFuncSelect');
+    const inputSelect = document.getElementById('mathTargetSelect');
+    if (!funcSelect || !inputSelect) return;
+    const func = funcSelect.value;
+    const inputId = inputSelect.value;
+    const input = document.getElementById(inputId);
+    if (input) {
+        const start = input.selectionStart || 0;
+        const end = input.selectionEnd || 0;
+        const value = input.value;
+        input.value = value.slice(0, start) + func + value.slice(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + func.length;
+    }
+}
+
+function updateMathTargetSelect() {
+    // Find all text/number/password inputs
+    const inputs = Array.from(document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]'));
+    const select = document.getElementById('mathTargetSelect');
+    if (!select) return;
+    select.innerHTML = '';
+    inputs.forEach(input => {
+        if (input.id) {
+            const option = document.createElement('option');
+            option.value = input.id;
+            option.textContent = input.id;
+            select.appendChild(option);
+        }
+    });
+}
+
+window.addEventListener('DOMContentLoaded', updateMathTargetSelect);
 // Scotland flag color scheme
 document.body.classList.add('scotland-flag');
 

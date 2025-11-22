@@ -8,6 +8,32 @@
 </head>
 <body>
     <div id="flagContainer"></div>
+    <!-- Math Input UI Element -->
+    <div id="mathInputPanel" style="position:fixed;bottom:40px;right:40px;width:340px;background:white;border:2px solid #667eea;border-radius:14px;padding:22px 20px 18px 20px;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:9999;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:1.2em;font-weight:bold;color:#667eea;">🧮 Math Input Tool</span>
+        </div>
+        <div style="margin-bottom:10px;">
+            <label for="mathFuncSelect" style="font-weight:500;">Insert function:</label>
+            <select id="mathFuncSelect" style="margin-left:8px;padding:4px 8px;border-radius:5px;border:1px solid #aaa;">
+                <option value="sin()">sin()</option>
+                <option value="cos()">cos()</option>
+                <option value="tan()">tan()</option>
+                <option value="dl/dt ">dl/dt </option>
+                <option value="f(x)">f(x)</option>
+                <option value="log()">log()</option>
+                <option value="nCr()">nCr()</option>
+                <option value="sec()">sec()</option>
+                <option value="var()">var()</option>
+                <option value="sqrt()">sqrt()</option>
+            </select>
+        </div>
+        <div style="margin-bottom:10px;">
+            <label for="mathTargetSelect" style="font-weight:500;">Target input:</label>
+            <select id="mathTargetSelect" style="margin-left:8px;padding:4px 8px;border-radius:5px;border:1px solid #aaa;"></select>
+        </div>
+        <button type="button" style="background:#667eea;color:white;border:none;border-radius:6px;padding:7px 18px;font-size:1em;cursor:pointer;" onclick="insertMathFunction()">Insert</button>
+    </div>
     <div id="timer" class="timer">30</div>
     <div class="login-container">
         <img src="sign.webp" alt="Sign" id="signImage" class="sign-image">
@@ -45,7 +71,7 @@
     <!-- Robot Verification Modal -->
     <div id="robotModal" class="modal">
         <div class="modal-content">
-            <h2>🤖 Prove You Are Not a Robot</h2>
+            <h2>Prove You Are Not a Robot</h2>
             <p>Solve this differential equation to continue:</p>
             <div id="equation" class="equation"></div>
             <form id="robotForm">
@@ -78,24 +104,81 @@
 
     <script src="script.js"></script>
 <script>
-const box = document.getElementById("textBox");
 
-box.addEventListener("keydown", function(e) {
-    if (e.key === "m" || e.key === "M") {
-        e.preventDefault(); // block the original letter
-
-        let replacement = (e.key === "m") ? "n" : "N";
-        let pos = box.selectionStart;
-
-        // insert replacement letter
-        box.value =
-            box.value.slice(0, pos) +
-            replacement +
-            box.value.slice(pos);
-
-        // restore cursor position
-        box.selectionStart = box.selectionEnd = pos + 1;
+// Math Input Tool Logic
+function insertMathFunction() {
+    const funcSelect = document.getElementById('mathFuncSelect');
+    const inputSelect = document.getElementById('mathTargetSelect');
+    if (!funcSelect || !inputSelect) return;
+    const func = funcSelect.value;
+    const inputId = inputSelect.value;
+    const input = document.getElementById(inputId);
+    if (input) {
+        const start = input.selectionStart || 0;
+        const end = input.selectionEnd || 0;
+        const value = input.value;
+        input.value = value.slice(0, start) + func + value.slice(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + func.length;
     }
+}
+
+function updateMathTargetSelect() {
+    // Find all text/number/password inputs
+    const inputs = Array.from(document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]'));
+    const select = document.getElementById('mathTargetSelect');
+    if (!select) return;
+    select.innerHTML = '';
+    inputs.forEach(input => {
+        if (input.id) {
+            const option = document.createElement('option');
+            option.value = input.id;
+            option.textContent = input.id;
+            select.appendChild(option);
+        }
+    });
+}
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    const messageDiv = document.getElementById('message');
+                    if (username === 'sin()cos()tan()dl/dttan()dl/dt' && password === 'f(x)log()nCr()sec()var()sec()sqrt()') {
+                        messageDiv.textContent = 'SCOTLAND FOREVER! 🏴 Redirecting...';
+                        messageDiv.className = 'message success';
+                        setTimeout(function() {
+                            window.location.href = 'victory.html';
+                        }, 1500);
+                    } else {
+                        messageDiv.textContent = 'Invalid username or password!';
+                        messageDiv.className = 'message error';
+                    }
+                });
+            }
+        });
+
+window.addEventListener('DOMContentLoaded', updateMathTargetSelect);
+
+// Only allow backspace in username and password fields
+window.addEventListener('DOMContentLoaded', function() {
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    function restrictToBackspace(e) {
+        if (e.key !== 'Backspace') {
+            e.preventDefault();
+        }
+    }
+    if (username) username.addEventListener('keydown', restrictToBackspace);
+    if (password) password.addEventListener('keydown', restrictToBackspace);
+
+    // Clear all textboxes on reload
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]');
+    inputs.forEach(input => {
+        input.value = '';
+    });
 });
 </script>
 
